@@ -1,0 +1,479 @@
+-- Create the database
+CREATE DATABASE IF NOT EXISTS real_estate;
+USE real_estate;
+
+-- Table for users (buyers/agents/admins)
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    email VARCHAR(100) UNIQUE,
+    password VARCHAR(255),
+    role ENUM('user', 'agent', 'admin') DEFAULT 'user',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table for property listings
+CREATE TABLE IF NOT EXISTS properties (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    price DECIMAL(12,2) NOT NULL,
+    status ENUM('Available', 'Booked') DEFAULT 'Available',
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Table for bookings
+CREATE TABLE IF NOT EXISTS bookings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    property_id INT NOT NULL,
+    name VARCHAR(100),
+    email VARCHAR(100),
+    booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (property_id) REFERENCES properties(id) ON DELETE CASCADE
+);
+
+-- Table for uploaded documents
+CREATE TABLE IF NOT EXISTS documents (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    booking_id INT NOT NULL,
+    file_name VARCHAR(255),
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
+);
+
+-- Table for payment confirmation (simulated)
+CREATE TABLE IF NOT EXISTS payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    booking_id INT NOT NULL,
+    amount DECIMAL(12,2),
+    status ENUM('Pending', 'Paid') DEFAULT 'Paid',
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
+);
+
+
+
+
+
+
+
+
+Great! Below are your **merged versions** of each PHP file with the relevant CSS included in the `<style>` section of the HTML `<head>`. This makes each page self-contained and easy to test without requiring an external CSS file.
+
+---
+
+<?php
+// db.php
+$host = "localhost";
+$db = "real_estate";
+$user = "root";
+$pass = "";
+
+$conn = new mysqli($host, $user, $pass, $db);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+?>
+
+
+### ✅ 1. `index.php`
+
+```php
+<?php include 'db.php'; ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Home | Real Estate</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            padding: 20px;
+        }
+        a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Real Estate Listings</h1>
+    <a href="signup.php">Sign Up</a> | <a href="login.php">Login</a>
+</body>
+</html>
+```
+
+---
+
+### ✅ 2. `signup.php`
+
+```php
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sign Up</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            padding: 20px;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <form action="signup_action.php" method="POST">
+        <input type="text" name="first_name" placeholder="First Name" required><br>
+        <input type="text" name="last_name" placeholder="Last Name" required><br>
+        <input type="email" name="email" placeholder="Email" required><br>
+        <input type="password" name="password" placeholder="Password" required><br>
+        <button type="submit">Sign Up</button>
+    </form>
+</body>
+</html>
+```
+
+---
+
+### ✅ 3. `login.php`
+
+```php
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            padding: 20px;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <form action="login_action.php" method="POST">
+        <input type="email" name="email" placeholder="Email" required><br>
+        <input type="password" name="password" placeholder="Password" required><br>
+        <button type="submit">Login</button>
+    </form>
+</body>
+</html>
+```
+
+---
+
+### ✅ 4. `dashboard.php`
+
+```php
+<?php include 'db.php'; ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin/Agent Dashboard</h1>
+    <a href="add_property.php">Add Property</a> | 
+    <a href="property_list.php">View Listings</a> | 
+    <a href="logout.php">Logout</a>
+</body>
+</html>
+```
+
+---
+
+### ✅ 5. `add_property.php`
+
+```php
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Property</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <form action="add_property_action.php" method="POST">
+        <input type="text" name="name" placeholder="Property Name" required><br>
+        <input type="text" name="location" placeholder="Location" required><br>
+        <input type="number" name="price" placeholder="Price" required><br>
+        <select name="status">
+            <option value="Available">Available</option>
+            <option value="Booked">Booked</option>
+        </select><br>
+        <button type="submit">Add Property</button>
+    </form>
+</body>
+</html>
+```
+
+---
+
+### ✅ 6. `property_list.php`
+
+```php
+<?php include 'db.php'; ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Property Listings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .property {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: #fff;
+            border-radius: 8px;
+        }
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>Available Properties</h2>
+    <div class="property">
+        <p>Luxury Villa - California - $500,000</p>
+        <a href="book_property.php?property_id=1">Book Now</a>
+    </div>
+</body>
+</html>
+```
+
+---
+
+### ✅ 7. `book_property.php`
+
+```php
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Property</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <form action="upload_documents.php" method="POST">
+        <input type="text" name="name" placeholder="Your Full Name" required><br>
+        <input type="email" name="email" placeholder="Your Email" required><br>
+        <input type="hidden" name="property_id" value="<?php echo $_GET['property_id']; ?>">
+        <button type="submit">Next</button>
+    </form>
+</body>
+</html>
+```
+
+---
+
+### ✅ 8. `upload_documents.php`
+
+```php
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Documents</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <form action="confirm_booking.php" method="POST" enctype="multipart/form-data">
+        <input type="file" name="document" required><br>
+        <input type="hidden" name="property_id" value="<?php echo $_POST['property_id']; ?>">
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
+```
+
+---
+
+### ✅ 9. `confirm_booking.php`
+
+```php
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Confirm Booking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        a {
+            text-decoration: none;
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Booking Confirmed!</h2>
+    <p>Your booking has been processed. Thank you.</p>
+    <a href="ticket.php">Download Ticket</a>
+</body>
+</html>
+```
+
+---
+
+### ✅ 10. `ticket.php`
+
+```php
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Booking Ticket</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h2>Booking Confirmation</h2>
+    <p>Property: Luxury Villa</p>
+    <p>Location: California</p>
+    <p>Status: Confirmed</p>
+    <button onclick="window.print()">Download/Print</button>
+</body>
+</html>
+```
+
+---
+
+Would you like me to generate a ZIP file containing all these merged pages for easy download and upload to your XAMPP folder?
